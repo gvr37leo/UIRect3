@@ -48,11 +48,15 @@ class UIRect{
             // handleoffsetmax.pos.onchange.trigger(new PEvent(val.max),null)
         })
 
-        //when the inner data changes update the handles
-        this.anchormin.onchange.listen(e => {
+        //when the inner data changes update the handles and the absrect
+
+        var updateAnchor = (e,handle) => {
             var pos = this.uirectlerp(this.parent.get().min,this.parent.get().max,e.val)
-            handleanchormin.pos.setH(PEvent.create(e.handled,pos))
+            handle.pos.setH(PEvent.create(e.handled,pos))
             this.absRect.set(this.calcAbsRect(this.parent.get()))
+        }
+        this.anchormin.onchange.listen(e => {
+            updateAnchor(e,handleanchormin)
         })
 
         this.anchormax.onchange.listen(e => {
