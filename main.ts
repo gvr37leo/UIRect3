@@ -25,14 +25,12 @@ var uirect = new UIRect(
     demoRect
 )
 
-var secondrect = new UIRect(
-    new Vector(0.1,0.1),new Vector(0.9,0.9),
-    new Vector(10,10), new Vector(-10,-10),
-    uirect.absRect
-)
-uirect.addChild(secondrect)
-
-
+// var secondrect = new UIRect(
+//     new Vector(0.1,0.1),new Vector(0.9,0.9),
+//     new Vector(10,10), new Vector(-10,-10),
+//     uirect.absRect
+// )
+// uirect.addChild(secondrect)
 
 var clickmanager = new ClickManager()
 clickmanager.listenToDocument()
