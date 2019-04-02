@@ -36,7 +36,18 @@ class UIRect{
         var handleanchormin = new Handle(this.calcAbsAnchorPos(this.anchormin.get()),clickmanager)
         var handleanchormax = new Handle(this.calcAbsAnchorPos(this.anchormax.get()),clickmanager)
 
+        //what will each event ultimately cause?
+        //anchormin/max
+        //offsetminmax
+        //handleanchormin/max
+        //handleoffsetmin/max
+        //parent
+        //absrect
         
+
+
+
+
         this.parent.onchange.listen((val,old) => {
             handleanchormin.pos.set(this.calcAbsAnchorPos(this.anchormin.get()))
             handleanchormax.pos.set(this.calcAbsAnchorPos(this.anchormax.get()))
