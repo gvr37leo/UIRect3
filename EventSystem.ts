@@ -121,11 +121,14 @@ class PEvent<T>{
 class PBox<T>{
     box:Box<T>
     onchange:EventSystem<PEvent<T>> = new EventSystem()
+    private isProtected:boolean = false
 
     constructor(val:T){
         this.box = new Box(val)
         this.box.onchange.listen((val,old) => {
-            this.onchange.trigger(new PEvent(val),null)
+            if(!this.isProtected){
+                this.onchange.trigger(new PEvent(val),null)
+            }
         })
     }
 
@@ -138,10 +141,10 @@ class PBox<T>{
     }
 
     setHP(handled:boolean,val:T){
-        this.setH(PEvent.create(handled,val))
+        this.setProtected(PEvent.create(handled,val))
     }
 
-    setH(e:PEvent<T>){
+    setProtected(e:PEvent<T>){
         if(!e.handled){
             e.handled = true
             this.setS(e)
@@ -149,7 +152,8 @@ class PBox<T>{
     }
 
     setS(e:PEvent<T>){
+        this.isProtected = e.handled
         this.box.set(e.val,true)
-        this.onchange.trigger(e,null)
+        this.isProtected = false
     }
 }
