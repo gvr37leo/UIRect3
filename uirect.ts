@@ -28,8 +28,10 @@ class UIRect{
     }
 
     updateAbsRect(handled:boolean){
-        var absrect = this.calcAbsRect()
-        this.absRect.setHP(handled,absrect)
+        if(!handled){
+            var absrect = this.calcAbsRect()
+            this.absRect.setHP(handled,absrect)
+        }
     }
 
     attachHandles2UIRect(clickmanager:ClickManager):Handle[]{
@@ -45,7 +47,7 @@ class UIRect{
 
 
         //update functions----------------------------------------------
-        var updateAbsRect = this.updateAbsRect
+        var updateAbsRect = this.updateAbsRect.bind(this)
 
         var updateAnchorHandle = (handled:boolean,minormax:number) => {
             var anchor = anchorDatas[minormax]
