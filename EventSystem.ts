@@ -119,26 +119,22 @@ class PEvent<T>{
 }
 
 class PBox<T>{
-    private box:Box<PEvent<T>>
-    onchange:EventSystem<PEvent<T>>
+    box:Box<T>
+    onchange:EventSystem<PEvent<T>> = new EventSystem()
 
     constructor(val:T){
-        this.box = new Box(new PEvent(val))
-        this.onchange = this.box.onchange
+        this.box = new Box(val)
+        this.box.onchange.listen((val,old) => {
+            this.onchange.trigger(new PEvent(val),null)
+        })
     }
 
     get():T{
-        return this.box.value.val
+        return this.box.value
     }
 
     set(v:T){
-        var e = new PEvent(v)
-        e.handled = false
-        this.box.set(e)
-    }
-
-    setS(e:PEvent<T>){
-        this.box.set(e)
+        this.box.set(v)
     }
 
     setHP(handled:boolean,val:T){
@@ -150,5 +146,10 @@ class PBox<T>{
             e.handled = true
             this.setS(e)
         }
+    }
+
+    setS(e:PEvent<T>){
+        this.box.set(e.val,true)
+        this.onchange.trigger(e,null)
     }
 }
