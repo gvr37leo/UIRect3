@@ -120,9 +120,14 @@ class UIRect{
 
         //anchors change handling
         var processAnchorHandleChange = (anchorhandle:PEvent<Vector>, minormax:number) => {
-            updateAnchorData(anchorhandle.handled,minormax)
-            updateAbsRect(anchorhandle.handled)
+            // updateAnchorData(anchorhandle.handled,minormax)
+            // updateAbsRect(anchorhandle.handled)
+            // updateOffsetHandle(anchorhandle.handled,minormax)
+
             updateOffsetHandle(anchorhandle.handled,minormax)
+            updateOffsetData(anchorhandle.handled,minormax)
+            updateAnchorData(anchorhandle.handled,minormax)
+            
         }
 
         var processOffsetHandleChange = (offsetHandle:PEvent<Vector>, minormax:number) => {
