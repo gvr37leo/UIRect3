@@ -15,10 +15,10 @@ class UIRect{
         this.anchormax = new PBox(anchormax)
         this.offsetmin = new PBox(offsetmin)
         this.offsetmax = new PBox(offsetmax)
-        this.absRect = new PBox(this.calcAbsRect(this.parent.get()))
+        this.absRect = new PBox(this.calcAbsRect())
 
         this.parent.onchange.listen((val,old) => {
-            this.absRect.setH(PEvent.create(false,this.calcAbsRect(this.parent.get())))
+            this.updateAbsRect(false)
         })
     }
 
@@ -27,103 +27,121 @@ class UIRect{
         uirect.parent.value = this.absRect.get()
     }
 
+    updateAbsRect(handled:boolean){
+        var absrect = this.calcAbsRect()
+        this.absRect.setHP(handled,absrect)
+    }
 
     attachHandles2UIRect(clickmanager:ClickManager):Handle[]{
         var absrect = this.absRect.get()
-        
         var handleoffsetmin = new Handle(absrect.min,clickmanager)
         var handleoffsetmax = new Handle(absrect.max,clickmanager)
         var handleanchormin = new Handle(this.calcAbsAnchorPos(this.anchormin.get()),clickmanager)
         var handleanchormax = new Handle(this.calcAbsAnchorPos(this.anchormax.get()),clickmanager)
         var offsethandles = [handleoffsetmin,handleoffsetmax]
         var anchorhandles = [handleanchormin,handleanchormax]
+        var offsetDatas = [this.offsetmin,this.offsetmax]
+        var anchorDatas = [this.anchormin,this.anchormax]
 
 
+        //update functions----------------------------------------------
+        var updateAbsRect = this.updateAbsRect
 
-
-        this.parent.onchange.listen((val,old) => {
-            handleanchormin.pos.setHP(false,this.calcAbsAnchorPos(this.anchormin.get()))
-            handleanchormax.pos.setHP(false,this.calcAbsAnchorPos(this.anchormax.get()))
-            var absrect = this.calcAbsRect(this.parent.get())
-            handleoffsetmin.pos.setHP(false,absrect.min.c())
-            handleoffsetmax.pos.setHP(false,absrect.max.c())
-            this.absRect.setHP(false,absrect)
-        })
-
-        this.absRect.onchange.listen((e,old) => {
-            handleoffsetmin.pos.setHP(e.handled,e.val.min.c())
-            handleoffsetmax.pos.setHP(e.handled,e.val.max.c())
-        })
-
-        //when the inner data changes update the handles and the absrect
-
-        var updateAnchor = (anchor: PEvent<Vector>,minormax:number) => {
-            var handle = anchorhandles[minormax]
-            handle.pos.setHP(anchor.handled,this.calcAbsAnchorPos(anchor.val))
-            this.absRect.setHP(anchor.handled,this.calcAbsRect(this.parent.get()))
-            // todo - update offset handle(s)
+        var updateAnchorHandle = (handled:boolean,minormax:number) => {
+            var anchor = anchorDatas[minormax]
+            var anchorhandle = anchorhandles[minormax]
+            anchorhandle.pos.setHP(handled,this.calcAbsAnchorPos(anchor.get()))
         }
 
-        var updateOffset = (offset: PEvent<Vector>,minormax:number) => {
-            var handle = offsethandles[minormax]
-            this.absRect.setHP(offset.handled,this.calcAbsRect(this.parent.get()))
-
+        var updateOffsetHandle = (handled:boolean,minormax:number) => {
             var absrectvals = [this.absRect.get().min,this.absRect.get().max]
-            handle.pos.setHP(offset.handled,absrectvals[minormax])
+            offsethandles[minormax].pos.setHP(handled,absrectvals[minormax].c())
+        }
+
+        var updateAnchorData = (handled:boolean,minormax:number) => {
+            var anchor = anchorDatas[minormax]
+            var anchorhandle = anchorhandles[minormax]
+            var pos = this.uirectInvlerp(this.parent.get().min, this.parent.get().max,anchorhandle.pos.get())
+            anchor.setHP(handled,pos)
+        }
+
+        var updateOffsetData = (handled:boolean,minormax:number) => {
+            var offset = offsetDatas[minormax]
+            var offsethandle = offsethandles[minormax]
+            var anchor = anchorDatas[minormax]
+            offset.setHP(handled,this.calcAbsAnchorPos(anchor.get()).to(offsethandle.pos.get()))
+        }
+
+
+        //parent-------------------------------
+        this.parent.onchange.listen((val,old) => {
+            updateAnchorHandle(false,0)
+            updateAnchorHandle(false,1)
+            updateAbsRect(false)
+            updateOffsetHandle(false,0)
+            updateOffsetHandle(false,1)
+        })
+
+        //absrect-------------------------------
+        this.absRect.onchange.listen((e,old) => {
+            updateOffsetHandle(e.handled,0)
+            updateOffsetHandle(e.handled,1)
+        })
+
+        //innerdata change handling---------------
+        var processAnchorDataChange = (handled:boolean, minormax:number) => {
+            updateAnchorHandle(handled,minormax)
+            updateAbsRect(handled)
+        }
+
+        var processOffsetDataChange = (handled:boolean, minormax:number) => {
+            updateOffsetHandle(handled,minormax)
+            updateAbsRect(handled)
         }
 
         this.anchormin.onchange.listen(e => {
-            updateAnchor(e,0)
+            processAnchorDataChange(e.handled,0)
         })
 
         this.anchormax.onchange.listen(e => {
-            updateAnchor(e,1)
+            processAnchorDataChange(e.handled,1)
         })
         
         this.offsetmin.onchange.listen(e => {
-            updateOffset(e,0)
+            processOffsetDataChange(e.handled,0)
         })
 
         this.offsetmax.onchange.listen(e => {
-            updateOffset(e,1)
+            processOffsetDataChange(e.handled,1)
         })
 
 
-        //when the handles change update the inner data
-        var processAnchorChange = (anchorhandle,minormax:number) => {
-            //update anchor
-            //update absrect
-            //update handleoffset
-
-
-            // var pos = this.uirectInvlerp(this.parent.get().min,this.parent.get().max,e.val)
-            // anchor.setH(PEvent.create(e.handled,pos))
+        //anchors change handling
+        var processAnchorHandleChange = (anchorhandle:PEvent<Vector>, minormax:number) => {
+            updateAnchorData(anchorhandle.handled,minormax)
+            updateAbsRect(anchorhandle.handled)
+            updateOffsetHandle(anchorhandle.handled,minormax)
         }
 
-        var processOffsetChange = (e:PEvent<Vector>,minormax:number) => {
-            //update offset
-            //update absrect
-
-            var offsethandle = offsethandles[minormax]
-            var anchorhandle = anchorhandles[minormax]
-            var pos = this.calcAbsAnchorPos(offsethandle.pos.get()).to(e.val)
-            // offset.setH(PEvent.create(e.handled,pos))
+        var processOffsetHandleChange = (offsetHandle:PEvent<Vector>, minormax:number) => {
+            updateOffsetData(offsetHandle.handled,minormax)
+            updateAbsRect(offsetHandle.handled)
         }
 
         handleanchormin.pos.onchange.listen(e => {
-            processAnchorChange(e,0)
+            processAnchorHandleChange(e,0)
         })
 
         handleanchormax.pos.onchange.listen(e => {
-            processAnchorChange(e,1)
+            processAnchorHandleChange(e,1)
         })
 
         handleoffsetmin.pos.onchange.listen(e => {
-            processOffsetChange(e,0)
+            processOffsetHandleChange(e,0)
         })
 
         handleoffsetmax.pos.onchange.listen(e => {
-            processOffsetChange(e,1)
+            processOffsetHandleChange(e,1)
         })
 
         return [handleanchormin,handleanchormax,handleoffsetmin,handleoffsetmax]
@@ -140,7 +158,7 @@ class UIRect{
         return this.uirectlerp(this.parent.get().min,this.parent.get().max,anchor)
     }
 
-    calcAbsRect(absRectPar:Rect){
+    calcAbsRect(){
         var absmin = this.calcAbsAnchorPos(this.anchormin.get()).add(this.offsetmin.get())
         var absmax = this.calcAbsAnchorPos(this.anchormax.get()).add(this.offsetmax.get())
         return new Rect(absmin,absmax)
