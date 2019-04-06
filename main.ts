@@ -53,9 +53,13 @@ function attachHandles2Rect(prect:Box<Rect>,clickmanager:ClickManager){
     return [minhandle,maxhandle]
 }
 
-loop((dt) => {
+
+
+loop(dodraw)
+
+function dodraw(dt){
     ctxt.clearRect(0,0,canvasize.x,canvasize.y)
     uirect.draw(ctxt)
     handles.forEach(h => h.draw(ctxt))
     demoRect.get().draw(ctxt)
-})
+}

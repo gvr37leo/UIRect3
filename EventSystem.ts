@@ -126,9 +126,7 @@ class PBox<T>{
     constructor(val:T){
         this.box = new Box(val)
         this.box.onchange.listen((val,old) => {
-            if(!this.isProtected){
-                this.onchange.trigger(new PEvent(val),null)
-            }
+            this.onchange.trigger(PEvent.create(this.isProtected,val),null)
         })
     }
 
@@ -153,7 +151,7 @@ class PBox<T>{
 
     setS(e:PEvent<T>){
         this.isProtected = e.handled
-        this.box.set(e.val,true)
+        this.box.set(e.val)
         this.isProtected = false
     }
 }

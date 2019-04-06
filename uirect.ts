@@ -40,6 +40,7 @@ class UIRect{
         var handleoffsetmax = new Handle(absrect.max,clickmanager)
         var handleanchormin = new Handle(this.calcAbsAnchorPos(this.anchormin.get()),clickmanager)
         var handleanchormax = new Handle(this.calcAbsAnchorPos(this.anchormax.get()),clickmanager)
+        var handles = [handleanchormin,handleanchormax,handleoffsetmin,handleoffsetmax]
         var offsethandles = [handleoffsetmin,handleoffsetmax]
         var anchorhandles = [handleanchormin,handleanchormax]
         var offsetDatas = [this.offsetmin,this.offsetmax]
@@ -151,7 +152,7 @@ class UIRect{
             processOffsetHandleChange(e,1)
         })
 
-        return [handleanchormin,handleanchormax,handleoffsetmin,handleoffsetmax]
+        return handles
     }
 
     draw(ctxt:CanvasRenderingContext2D){
