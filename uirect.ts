@@ -22,9 +22,10 @@ class UIRect{
         })
     }
 
-    addChild(uirect:UIRect){
-        this.children.push(uirect)
-        uirect.parent.value = this.absRect.get()
+    addChild(anchmin:Vector,anchmax:Vector,offmin:Vector,offmax:Vector){
+        var child = new UIRect(anchmin,anchmax,offmin,offmax,this.absRect.box)
+        this.children.push(child)
+        return child
     }
 
     updateAbsRect(handled:boolean){

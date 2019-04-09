@@ -1,110 +1,119 @@
-// enum Justification{
-//     start,
-//     end,
-//     center,
-//     spacebetween,
-//     spacearound,
-//     spaceevenly,
-// }
+enum Justification{
+    start,
+    end,
+    center,
+    spacebetween,
+    spacearound,
+    spaceevenly,
+}
 
-// enum Alignment{
-//     start,
-//     end,
-//     center,
-//     stretch,
-// }
+enum Alignment{
+    start,
+    end,
+    center,
+    stretch,
+}
 
-// class FlexBox{
-//     public justifyContent:Justification = Justification.start
-//     public AlignItems:Alignment = Alignment.center
-    
-//     constructor(public uirect:UIRect,public rects:UIRect[]){
+class FlexBox{
+    public justifyContent:Justification = Justification.center
+    public AlignItems:Alignment = Alignment.center
+    children: UIRect[];
+    draw = this.uirect.draw
+
+    constructor(public uirect:UIRect){
+        this.children = uirect.children
+        for(var child of this.children){
+            child.anchormin.set(new Vector(0,0))
+            child.anchormax.set(new Vector(0,0))
+        }
+
+        var posses = [this.positionStart,this.positionEnd,this.positionCenter,this.positionBetween,this.positionAround,this.positionEvenly].map(p => p.bind(this))
+        this.uirect.absRect.onchange.listen((val,old) => {
+            
+            var rects = posses[this.justifyContent]()
+            for(var i = 0; i < rects.length; i++){
+                this.children[i].offsetmin.set(rects[i].min)
+                this.children[i].offsetmax.set(rects[i].max)
+            }
+        })
         
-//     }
+        this.uirect.absRect.box.boxtrigger()
+    }
 
-//     draw(){
+    width(){
+        return this.uirect.absRect.get().size().x
+    }
 
-//     }
+    positionStart(){
+        return this.spaceBlocks(0,0)
+    }
 
-//     positionStart(){
-//         return this.spaceBlocks(0,0)
-//     }
+    freespace(margin:number){
+        return this.width() - this.calcChildrenWidth(margin)
+    }
 
-//     positionEnd(){
-//         var freespace = this.freespace(this.widthOfBlocks())
-//         return this.spaceBlocks(freespace,0)
-//     }
+    positionEnd(){
+        return this.spaceBlocks(this.freespace(0),0)
+    }
 
-//     positionCenter(){
-//         var width = this.widthOfBlocks()
-//         // var center = this.rect.value.size().scale(0.5)
-//         // return this.spaceBlocks(center.x - width / 2,0)
-//     }
+    positionCenter(){
+        var width = this.calcChildrenWidth(0)
+        var center = this.uirect.absRect.get().size().scale(0.5)
+        return this.spaceBlocks(center.x - width / 2,0)
+    }
 
-//     positionBetween(){
-//         var freespacePerBlock = this.freespacePerBlock()
-//         return this.spaceBlocks(0, 0)
-//     }
+    positionBetween(){
+        return this.spaceBlocks(0, this.freespace(0) / (this.children.length - 1))
+    }
 
-//     positionAround(){
-//         var freespacePerBlock = this.freespacePerBlock()
-//         return this.spaceBlocks(freespacePerBlock / 2, freespacePerBlock)
-//     }
+    positionAround(){
+        var freespacePerBlock = this.freespace(0) / this.children.length
+        return this.spaceBlocks(freespacePerBlock / 2, freespacePerBlock)
+    }
 
-//     positionEvenly(){
-//         var gaps = this.rects.length + 1;
-//         var freespace = this.freespace(this.widthOfBlocks());
-//         var freespacePerGap = freespace / gaps;
-//         return this.spaceBlocks(freespacePerGap, freespacePerGap);
-//     }
+    positionEvenly(){
+        var freespacepergap = this.freespace(0) / (this.children.length + 1)
+        return this.spaceBlocks(freespacepergap,freespacepergap)
+    }
 
-//     spaceBlocks(begin:number,skip:number):Rect[]{
-//         var result:Rect[] = []
-//         var current = begin
+    spaceBlocks(begin:number,margin:number):Rect[]{
+        var result:Rect[] = []
+        var current = begin
         
-//         for(var rect of this.rects){
-//             var topbottom = this.calcTopBottom(this.AlignItems, rect.absRect.value)
-//             var size = rect.absRect.value.size()
-//             var start = current
-//             var end = start + size.x
-//             result.push(new Rect(new Vector(start,topbottom[0]),new Vector(end,topbottom[1])))
-//             current += size.x + skip
-//         }
-//         return result
-//     }
+        for(var rect of this.children){
+            var size = rect.absRect.get().size()
+            var start = current
+            var end = start + size.x
+            result.push(new Rect(new Vector(start,0),new Vector(end,size.y)))
+            current += size.x + margin
+        }
+        return result
+    }
 
-//     calcTopBottom(alignment:Alignment, rect:Rect):[number,number]{
-//         var bot = 0;
-//         var size = rect.size()
+    // calcTopBottom(alignment:Alignment, rect:Rect):[number,number]{
+        // var bot = 0;
+        // var size = rect.size()
 
-//         var top = this.rect.value.size().y
-//         switch(alignment){
-//             case Alignment.start:{
-//                 return [bot,size.y];
-//             }
-//             case Alignment.end:{
-//                 return [top - size.y, top];
-//             }
-//             case Alignment.center:{
-//                 var center = top / 2
-//                 var halfsize = size.y / 2
-//                 return [center - halfsize, center + halfsize];
-//             }
-//             case Alignment.stretch:{
-//                 return [bot,top];
-//             }
-//         }
-//     }
+        // var top = this.rect.value.size().y
+        // switch(alignment){
+        //     case Alignment.start:{
+        //         return [bot,size.y];
+        //     }
+        //     case Alignment.end:{
+        //         return [top - size.y, top];
+        //     }
+        //     case Alignment.center:{
+        //         var center = top / 2
+        //         var halfsize = size.y / 2
+        //         return [center - halfsize, center + halfsize];
+        //     }
+        //     case Alignment.stretch:{
+        //         return [bot,top];
+        //     }
+        // }
+    // }
 
-//     widthOfBlocks(){
-//         return this.rects.reduce<number>((p,c) => p += c.absRect.value.size().x, 0)
-//     }
-
-//     freespace(widthOfBlocks:number){
-//         return this.rect.value.size().x - widthOfBlocks
-//     }
-
-//     freespacePerBlock(){
-//         return this.freespace(this.widthOfBlocks()) / this.rects.length
-//     }
-// }
+    calcChildrenWidth(margin:number){
+        return this.children.reduce((p,c) => p += c.absRect.get().size().x,0) + max(this.children.length - 1,0) * margin
+    }
+}
