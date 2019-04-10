@@ -39,11 +39,17 @@ class UIRect{
         var absrect = this.absRect.get()
         var handleoffsetmin = new Handle(absrect.min,clickmanager)
         var handleoffsetmax = new Handle(absrect.max,clickmanager)
+        var handleoffsetbotleft = new Handle(absrect.getPoint(new Vector(0,1)),clickmanager)//
+        var handleoffsettopright = new Handle(absrect.getPoint(new Vector(1,0)),clickmanager)//
         var handleanchormin = new Handle(this.calcAbsAnchorPos(this.anchormin.get()),clickmanager)
         var handleanchormax = new Handle(this.calcAbsAnchorPos(this.anchormax.get()),clickmanager)
+        var handleanchorbotleft = new Handle(this.calcAbsAnchorPos(new Vector(this.anchormin.get().x,this.anchormax.get().y)),clickmanager)
+        var handleanchortopright = new Handle(this.calcAbsAnchorPos(new Vector(this.anchormin.get().y,this.anchormax.get().x)),clickmanager)
         var handles = [handleanchormin,handleanchormax,handleoffsetmin,handleoffsetmax]
         var offsethandles = [handleoffsetmin,handleoffsetmax]
+        var offsetSecHandles = [handleoffsetbotleft,handleoffsettopright]
         var anchorhandles = [handleanchormin,handleanchormax]
+        var anchorSecHandles = [handleanchorbotleft,handleanchortopright]
         var offsetDatas = [this.offsetmin,this.offsetmax]
         var anchorDatas = [this.anchormin,this.anchormax]
 
@@ -57,8 +63,22 @@ class UIRect{
             anchorhandle.pos.setHP(handled,this.calcAbsAnchorPos(anchor.get()))
         }
 
+        var updateAnchorSecHandle = (handled:boolean,minormax:number) => {
+
+            //read data
+            var anchorhandle = anchorSecHandles[minormax]
+
+            //set handle
+            anchorhandle.pos.setHP(handled,null)
+        }
+
         var updateOffsetHandle = (handled:boolean,minormax:number) => {
             var absrectvals = [this.absRect.get().min,this.absRect.get().max]
+            offsethandles[minormax].pos.setHP(handled,absrectvals[minormax].c())
+        }
+
+        var updateOffsetSecHandle = (handled:boolean,minormax:number) => {
+            var absrectvals = [absrect.getPoint(new Vector(0,1)),absrect.getPoint(new Vector(1,0))]
             offsethandles[minormax].pos.setHP(handled,absrectvals[minormax].c())
         }
 
@@ -74,6 +94,31 @@ class UIRect{
             var offsethandle = offsethandles[minormax]
             var anchor = anchorDatas[minormax]
             offset.setHP(handled,this.calcAbsAnchorPos(anchor.get()).to(offsethandle.pos.get()))
+        }
+
+        var updateOffsetSecData = (handled:boolean,minormax:number) => {
+            var offsetSecHandle = offsetSecHandles[minormax]
+
+            //botleft
+            this.offsetmin.box.value.x = offsetSecHandle.pos.get().x
+            this.offsetmax.box.value.y = offsetSecHandle.pos.get().y
+
+
+            //topright
+            this.offsetmin.box.value.y = offsetSecHandle.pos.get().y
+            this.offsetmax.box.value.x = offsetSecHandle.pos.get().x
+
+
+
+            // var offset = offsetDatas[minormax]
+            // var offsethandle = offsethandles[minormax]
+            // var anchor = anchorDatas[minormax]
+            // offset.setHP(handled,this.calcAbsAnchorPos(anchor.get()).to(offsethandle.pos.get()))
+        }
+
+        var updateAnchorSecData = (handled:boolean,minormax:number) => {
+            //read handle
+            //set data
         }
 
 
