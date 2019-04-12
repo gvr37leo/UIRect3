@@ -36,6 +36,8 @@ class UIRect{
     }
 
     attachHandles2UIRect(clickmanager:ClickManager):Handle[]{
+
+        enum Loc{NW,NE,SE,SW}
         var absrect = this.absRect.get()
         var handleoffsetmin = new Handle(absrect.min,clickmanager)
         var handleoffsetmax = new Handle(absrect.max,clickmanager)
@@ -53,115 +55,164 @@ class UIRect{
         var offsetDatas = [this.offsetmin,this.offsetmax]
         var anchorDatas = [this.anchormin,this.anchormax]
 
+        var anchorhandles2 = [
+            handleanchormin,
+            handleanchortopright,
+            handleanchormax,
+            handleanchorbotleft,
+        ]
+        var offsethandles2 = [
+            handleoffsetmin,
+            handleoffsettopright,
+            handleoffsetmax,
+            handleoffsetbotleft,
+        ]
+
+        var updateAnchorHandles = (handled:boolean) => {
+            anchorhandles2.forEach((ah, i) => updateAnchorHandle2(handled,i))
+        }
+
+        var updateOffsetHandles = (handled:boolean) => {
+            offsethandles2.forEach((ah, i) => updateOffsetHandle2(handled,i))
+        }
+
+        var updateAnchorHandle2 = (handled:boolean,loc:Loc) => {
+            var pos = new Vector()
+            if(loc == Loc.NW || loc == Loc.NE){
+                pos.y = this.anchormin.get().y
+            }else{
+                pos.y = this.anchormax.get().y
+            }
+            if(loc == Loc.NW || loc == Loc.SW){
+                pos.x = this.anchormin.get().x
+            }else{
+                pos.x = this.anchormax.get().x
+            }
+
+            var absAnchorHandlePos = this.calcAbsAnchorPos(pos)
+            anchorhandles2[loc].pos.setHP(handled, absAnchorHandlePos)
+        }
+
+        var updateOffsetHandle2 = (handled:boolean,loc:Loc) => {
+            var absOffsetHandlePos = new Vector()
+            var minAbsOffsetPos = this.calcAbsOffsetPos(this.anchormin.get(),this.offsetmin.get())
+            var maxAbsOffsetPos = this.calcAbsOffsetPos(this.anchormax.get(),this.offsetmax.get())
+            if(loc == Loc.NW || loc == Loc.NE){
+                absOffsetHandlePos.y = minAbsOffsetPos.y
+            }else{
+                absOffsetHandlePos.y = maxAbsOffsetPos.y
+            }
+            if(loc == Loc.NW || loc == Loc.SW){
+                absOffsetHandlePos.x = minAbsOffsetPos.x
+            }else{
+                absOffsetHandlePos.x = maxAbsOffsetPos.x
+            }
+            offsethandles2[loc].pos.setHP(handled,absOffsetHandlePos)
+        }
+
+        var readAnchorhandlesetdata = (handled:boolean,loc:Loc) => {
+            var handlePos = anchorhandles2[loc].pos.get()
+            var isMinDirty = false
+            var isMaxDirty = false
+            if(loc == Loc.NW || loc == Loc.NE){
+                this.anchormin.get().y = handlePos.y
+                isMinDirty = true
+            }else{
+                this.anchormax.get().y = handlePos.y
+                isMaxDirty = true
+            }
+            if(loc == Loc.NW || loc == Loc.SW){
+                this.anchormin.get().x = handlePos.x
+                isMinDirty = true
+            }else{
+                this.anchormax.get().x = handlePos.x
+                isMaxDirty = true
+            }
+
+            if(!handled){
+                if(isMinDirty){
+                    this.anchormin.box.boxtrigger()
+                }
+                if(isMaxDirty){
+                    this.anchormax.box.boxtrigger()
+                }
+            }
+        }
+
+        var readOffsetHandleSetData  = (handled:boolean,loc:Loc) => {
+            var handlePos = offsethandles2[loc].pos.get()
+            var absAnchorMin = this.calcAbsAnchorPos(this.anchormin.get())
+            var absAnchorMax = this.calcAbsAnchorPos(this.anchormax.get())
+            this.offsetmin
+            this.offsetmax
+            var isMinDirty = false
+            var isMaxDirty = false
+            if(loc == Loc.NW || loc == Loc.NE){
+                this.offsetmin.get().y = to(absAnchorMin.y,handlePos.y)
+                isMinDirty = true
+            }else{
+                this.offsetmax.get().y = to(absAnchorMax.y,handlePos.y)
+                isMaxDirty = true
+            }
+            if(loc == Loc.NW || loc == Loc.SW){
+                this.offsetmin.get().x = to(absAnchorMin.x,handlePos.x)
+                isMinDirty = true
+            }else{
+                this.offsetmax.get().x = to(absAnchorMax.x,handlePos.x)
+                isMaxDirty = true
+            }
+
+            if(!handled){
+                if(isMinDirty){
+                    this.offsetmin.box.boxtrigger()
+                }
+                if(isMaxDirty){
+                    this.offsetmin.box.boxtrigger()
+                }
+            }
+        }
 
         //update functions----------------------------------------------
         var updateAbsRect = this.updateAbsRect.bind(this)
 
-        var updateAnchorHandle = (handled:boolean,minormax:number) => {
-            var anchor = anchorDatas[minormax]
-            var anchorhandle = anchorhandles[minormax]
-            anchorhandle.pos.setHP(handled,this.calcAbsAnchorPos(anchor.get()))
-        }
-
-        var updateAnchorSecHandle = (handled:boolean,minormax:number) => {
-
-            //read data
-            var anchorhandle = anchorSecHandles[minormax]
-
-            //set handle
-            anchorhandle.pos.setHP(handled,null)
-        }
-
-        var updateOffsetHandle = (handled:boolean,minormax:number) => {
-            var absrectvals = [this.absRect.get().min,this.absRect.get().max]
-            offsethandles[minormax].pos.setHP(handled,absrectvals[minormax].c())
-        }
-
-        var updateOffsetSecHandle = (handled:boolean,minormax:number) => {
-            var absrectvals = [absrect.getPoint(new Vector(0,1)),absrect.getPoint(new Vector(1,0))]
-            offsethandles[minormax].pos.setHP(handled,absrectvals[minormax].c())
-        }
-
-        var updateAnchorData = (handled:boolean,minormax:number) => {
-            var anchor = anchorDatas[minormax]
-            var anchorhandle = anchorhandles[minormax]
-            var pos = this.uirectInvlerp(this.parent.get().min, this.parent.get().max,anchorhandle.pos.get())
-            anchor.setHP(handled,pos)
-        }
-
-        var updateOffsetData = (handled:boolean,minormax:number) => {
-            var offset = offsetDatas[minormax]
-            var offsethandle = offsethandles[minormax]
-            var anchor = anchorDatas[minormax]
-            offset.setHP(handled,this.calcAbsAnchorPos(anchor.get()).to(offsethandle.pos.get()))
-        }
-
-        var updateOffsetSecData = (handled:boolean,minormax:number) => {
-            var offsetSecHandle = offsetSecHandles[minormax]
-
-            //botleft
-            this.offsetmin.box.value.x = offsetSecHandle.pos.get().x
-            this.offsetmax.box.value.y = offsetSecHandle.pos.get().y
-
-
-            //topright
-            this.offsetmin.box.value.y = offsetSecHandle.pos.get().y
-            this.offsetmax.box.value.x = offsetSecHandle.pos.get().x
-
-
-
-            // var offset = offsetDatas[minormax]
-            // var offsethandle = offsethandles[minormax]
-            // var anchor = anchorDatas[minormax]
-            // offset.setHP(handled,this.calcAbsAnchorPos(anchor.get()).to(offsethandle.pos.get()))
-        }
-
-        var updateAnchorSecData = (handled:boolean,minormax:number) => {
-            //read handle
-            //set data
-        }
-
-
         //parent-------------------------------
         this.parent.onchange.listen((val,old) => {
-            updateAnchorHandle(false,0)
-            updateAnchorHandle(false,1)
+            updateAnchorHandles(false)
             updateAbsRect(false)
-            updateOffsetHandle(false,0)
-            updateOffsetHandle(false,1)
+            updateOffsetHandles(false)
         })
 
         //absrect-------------------------------
         this.absRect.onchange.listen((e,old) => {
-            updateOffsetHandle(e.handled,0)
-            updateOffsetHandle(e.handled,1)
+            updateOffsetHandles(e.handled)
         })
 
-        //innerdata change handling---------------
-        var processAnchorDataChange = (handled:boolean, minormax:number) => {
-            updateAnchorHandle(handled,minormax)
-            updateAbsRect(handled)
-        }
-
-        var processOffsetDataChange = (handled:boolean, minormax:number) => {
-            updateOffsetHandle(handled,minormax)
-            updateAbsRect(handled)
-        }
-
         this.anchormin.onchange.listen(e => {
-            processAnchorDataChange(e.handled,0)
+            updateAnchorHandle2(e.handled,Loc.NW)
+            updateAnchorHandle2(e.handled,Loc.NE)
+            updateAnchorHandle2(e.handled,Loc.SW)
+            updateAbsRect(e.handled)
         })
 
         this.anchormax.onchange.listen(e => {
-            processAnchorDataChange(e.handled,1)
+            updateAnchorHandle2(e.handled,Loc.SE)
+            updateAnchorHandle2(e.handled,Loc.NE)
+            updateAnchorHandle2(e.handled,Loc.SW)
+            updateAbsRect(e.handled)
         })
         
         this.offsetmin.onchange.listen(e => {
-            processOffsetDataChange(e.handled,0)
+            updateOffsetHandle2(e.handled,Loc.NW)
+            updateOffsetHandle2(e.handled,Loc.NE)
+            updateOffsetHandle2(e.handled,Loc.SW)
+            updateAbsRect(e.handled)
         })
 
         this.offsetmax.onchange.listen(e => {
-            processOffsetDataChange(e.handled,1)
+            updateOffsetHandle2(e.handled,Loc.SE)
+            updateOffsetHandle2(e.handled,Loc.NE)
+            updateOffsetHandle2(e.handled,Loc.SW)
+            updateAbsRect(e.handled)
         })
 
 
@@ -183,19 +234,39 @@ class UIRect{
         }
 
         handleanchormin.pos.onchange.listen(e => {
-            processAnchorHandleChange(e,0)
+            updateOffsetHandles(e.handled)
+            
+            // processAnchorHandleChange(e,0)
+        })
+
+        handleanchortopright.pos.onchange.listen(e => {
+            // processAnchorHandleChange(e,0)
         })
 
         handleanchormax.pos.onchange.listen(e => {
-            processAnchorHandleChange(e,1)
+            // processAnchorHandleChange(e,1)
         })
 
+        handleanchorbotleft.pos.onchange.listen(e => {
+            // processAnchorHandleChange(e,0)
+        })
+
+
+
         handleoffsetmin.pos.onchange.listen(e => {
-            processOffsetHandleChange(e,0)
+            // processOffsetHandleChange(e,0)
+        })
+
+        handleanchortopright.pos.onchange.listen(e => {
+            // processOffsetHandleChange(e,1)
         })
 
         handleoffsetmax.pos.onchange.listen(e => {
-            processOffsetHandleChange(e,1)
+            // processOffsetHandleChange(e,1)
+        })
+
+        handleoffsetbotleft.pos.onchange.listen(e => {
+            // processOffsetHandleChange(e,1)
         })
 
         return handles
@@ -208,17 +279,21 @@ class UIRect{
         this.children.forEach(c => c.draw(ctxt))
     }
 
-    calcAbsAnchorPos(anchor:Vector){
+    calcAbsAnchorPos(anchor:Vector):Vector{
         return this.uirectlerp(this.parent.get().min,this.parent.get().max,anchor)
     }
 
-    calcAbsRect(){
-        var absmin = this.calcAbsAnchorPos(this.anchormin.get()).add(this.offsetmin.get())
-        var absmax = this.calcAbsAnchorPos(this.anchormax.get()).add(this.offsetmax.get())
+    calcAbsOffsetPos(anchor:Vector,offset:Vector):Vector{
+        return this.calcAbsAnchorPos(anchor).add(offset)
+    }
+
+    calcAbsRect():Rect{
+        var absmin = this.calcAbsOffsetPos(this.anchormin.get(),this.offsetmin.get())
+        var absmax = this.calcAbsOffsetPos(this.anchormax.get(),this.offsetmax.get())
         return new Rect(absmin,absmax)
     }
 
-    uirectlerp(a:Vector,b:Vector,w:Vector){
+    uirectlerp(a:Vector,b:Vector,w:Vector):Vector{
         return new Vector(lerp(a.x,b.x,w.x),lerp(a.y,b.y,w.y))
     }
 
