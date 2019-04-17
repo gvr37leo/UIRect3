@@ -48,35 +48,46 @@ class UIRect{
         var handleanchorbotleft = new Handle(this.calcAbsAnchorPos(new Vector(this.anchormin.get().x,this.anchormax.get().y)),clickmanager)
         var handleanchortopright = new Handle(this.calcAbsAnchorPos(new Vector(this.anchormin.get().y,this.anchormax.get().x)),clickmanager)
         var handles = [handleanchormin,handleanchormax,handleoffsetmin,handleoffsetmax]
-        var offsethandles = [handleoffsetmin,handleoffsetmax]
-        var offsetSecHandles = [handleoffsetbotleft,handleoffsettopright]
-        var anchorhandles = [handleanchormin,handleanchormax]
-        var anchorSecHandles = [handleanchorbotleft,handleanchortopright]
-        var offsetDatas = [this.offsetmin,this.offsetmax]
-        var anchorDatas = [this.anchormin,this.anchormax]
+        // var offsethandles = [handleoffsetmin,handleoffsetmax]
+        // var offsetSecHandles = [handleoffsetbotleft,handleoffsettopright]
+        // var anchorhandles = [handleanchormin,handleanchormax]
+        // var anchorSecHandles = [handleanchorbotleft,handleanchortopright]
+        // var offsetDatas = [this.offsetmin,this.offsetmax]
+        // var anchorDatas = [this.anchormin,this.anchormax]
 
-        var anchorhandles2 = [
+        var anchorhandles = [
             handleanchormin,
             handleanchortopright,
             handleanchormax,
             handleanchorbotleft,
         ]
-        var offsethandles2 = [
+        var offsethandles = [
             handleoffsetmin,
             handleoffsettopright,
             handleoffsetmax,
             handleoffsetbotleft,
         ]
 
+        // var dirs = [
+        //     [Loc.NW0,Loc.NE1],
+        //     [Loc.SW3,Loc.SE2]
+        // ]
+        var dirmap = [
+            [Loc.NE,Loc.SW],
+            [Loc.SE,Loc.NW],
+            [Loc.SW,Loc.NE],
+            [Loc.NW,Loc.SE],
+        ]
+
         var updateAnchorHandles = (handled:boolean) => {
-            anchorhandles2.forEach((ah, i) => updateAnchorHandle2(handled,i))
+            anchorhandles.forEach((ah, i) => updateAnchorHandle(handled,i))
         }
 
         var updateOffsetHandles = (handled:boolean) => {
-            offsethandles2.forEach((ah, i) => updateOffsetHandle2(handled,i))
+            offsethandles.forEach((ah, i) => updateOffsetHandle(handled,i))
         }
 
-        var updateAnchorHandle2 = (handled:boolean,loc:Loc) => {
+        var updateAnchorHandle = (handled:boolean,loc:Loc) => {
             var pos = new Vector()
             if(loc == Loc.NW || loc == Loc.NE){
                 pos.y = this.anchormin.get().y
@@ -90,10 +101,10 @@ class UIRect{
             }
 
             var absAnchorHandlePos = this.calcAbsAnchorPos(pos)
-            anchorhandles2[loc].pos.setHP(handled, absAnchorHandlePos)
+            anchorhandles[loc].pos.setHP(handled, absAnchorHandlePos)
         }
 
-        var updateOffsetHandle2 = (handled:boolean,loc:Loc) => {
+        var updateOffsetHandle = (handled:boolean,loc:Loc) => {
             var absOffsetHandlePos = new Vector()
             var minAbsOffsetPos = this.calcAbsOffsetPos(this.anchormin.get(),this.offsetmin.get())
             var maxAbsOffsetPos = this.calcAbsOffsetPos(this.anchormax.get(),this.offsetmax.get())
@@ -107,11 +118,11 @@ class UIRect{
             }else{
                 absOffsetHandlePos.x = maxAbsOffsetPos.x
             }
-            offsethandles2[loc].pos.setHP(handled,absOffsetHandlePos)
+            offsethandles[loc].pos.setHP(handled,absOffsetHandlePos)
         }
 
         var readAnchorhandlesetdata = (handled:boolean,loc:Loc) => {
-            var handlePos = anchorhandles2[loc].pos.get()
+            var handlePos = anchorhandles[loc].pos.get()
             var isMinDirty = false
             var isMaxDirty = false
             if(loc == Loc.NW || loc == Loc.NE){
@@ -140,7 +151,7 @@ class UIRect{
         }
 
         var readOffsetHandleSetData  = (handled:boolean,loc:Loc) => {
-            var handlePos = offsethandles2[loc].pos.get()
+            var handlePos = offsethandles[loc].pos.get()
             var absAnchorMin = this.calcAbsAnchorPos(this.anchormin.get())
             var absAnchorMax = this.calcAbsAnchorPos(this.anchormax.get())
             this.offsetmin
@@ -188,58 +199,85 @@ class UIRect{
         })
 
         this.anchormin.onchange.listen(e => {
-            updateAnchorHandle2(e.handled,Loc.NW)
-            updateAnchorHandle2(e.handled,Loc.NE)
-            updateAnchorHandle2(e.handled,Loc.SW)
+            updateAnchorHandle(e.handled,Loc.NW)
+            updateAnchorHandle(e.handled,Loc.NE)
+            updateAnchorHandle(e.handled,Loc.SW)
             updateAbsRect(e.handled)
         })
 
         this.anchormax.onchange.listen(e => {
-            updateAnchorHandle2(e.handled,Loc.SE)
-            updateAnchorHandle2(e.handled,Loc.NE)
-            updateAnchorHandle2(e.handled,Loc.SW)
+            updateAnchorHandle(e.handled,Loc.SE)
+            updateAnchorHandle(e.handled,Loc.NE)
+            updateAnchorHandle(e.handled,Loc.SW)
             updateAbsRect(e.handled)
         })
         
         this.offsetmin.onchange.listen(e => {
-            updateOffsetHandle2(e.handled,Loc.NW)
-            updateOffsetHandle2(e.handled,Loc.NE)
-            updateOffsetHandle2(e.handled,Loc.SW)
+            updateOffsetHandle(e.handled,Loc.NW)
+            updateOffsetHandle(e.handled,Loc.NE)
+            updateOffsetHandle(e.handled,Loc.SW)
             updateAbsRect(e.handled)
         })
 
         this.offsetmax.onchange.listen(e => {
-            updateOffsetHandle2(e.handled,Loc.SE)
-            updateOffsetHandle2(e.handled,Loc.NE)
-            updateOffsetHandle2(e.handled,Loc.SW)
+            updateOffsetHandle(e.handled,Loc.SE)
+            updateOffsetHandle(e.handled,Loc.NE)
+            updateOffsetHandle(e.handled,Loc.SW)
             updateAbsRect(e.handled)
         })
 
 
         //anchors change handling
-        var processAnchorHandleChange = (anchorhandle:PEvent<Vector>, minormax:number) => {
+        // var processAnchorHandleChange = (anchorhandle:PEvent<Vector>, minormax:number) => {
             // updateAnchorData(anchorhandle.handled,minormax)
             // updateAbsRect(anchorhandle.handled)
             // updateOffsetHandle(anchorhandle.handled,minormax)
 
-            updateOffsetHandle(anchorhandle.handled,minormax)
-            updateOffsetData(anchorhandle.handled,minormax)
-            updateAnchorData(anchorhandle.handled,minormax)
+        //     updateOffsetHandle(anchorhandle.handled,minormax)
+        //     updateOffsetData(anchorhandle.handled,minormax)
+        //     updateAnchorData(anchorhandle.handled,minormax)
             
-        }
+        // }
 
-        var processOffsetHandleChange = (offsetHandle:PEvent<Vector>, minormax:number) => {
-            updateOffsetData(offsetHandle.handled,minormax)
-            updateAbsRect(offsetHandle.handled)
-        }
+        // var processOffsetHandleChange = (offsetHandle:PEvent<Vector>, minormax:number) => {
+        //     updateOffsetData(offsetHandle.handled,minormax)
+        //     updateAbsRect(offsetHandle.handled)
+        // }
 
         handleanchormin.pos.onchange.listen(e => {
-            updateOffsetHandles(e.handled)
+            readAnchorhandlesetdata(e.handled,Loc.NW)
+            updateOffsetHandle(e.handled,Loc.NW)
+
+            updateAnchorHandle(e.handled,Loc.NE)
+            updateOffsetHandle(e.handled,Loc.NE)
+            updateAnchorHandle(e.handled,Loc.SW)
+            updateOffsetHandle(e.handled,Loc.SW)
+
+            updateAbsRect()
+
             
+
+
+            // updateOffsetHandles(e.handled)
+            // updateOffsetHandle2(e.handled,Loc.NE)
+            // updateAnchorHandle2(e.handled,Loc.NE)
+            // readAnchorhandlesetdata(e.handled,Loc.NE)
+            // readOffsetHandleSetData(e.handled,Loc.NE)
+            // updateAbsRect()
             // processAnchorHandleChange(e,0)
         })
 
         handleanchortopright.pos.onchange.listen(e => {
+            readAnchorhandlesetdata(e.handled,Loc.NE)
+            updateOffsetHandle(e.handled,Loc.NE)
+
+            updateAnchorHandle(e.handled,Loc.NW)
+            updateOffsetHandle(e.handled,Loc.NW)
+            updateAnchorHandle(e.handled,Loc.SE)
+            updateOffsetHandle(e.handled,Loc.SE)
+
+            updateAbsRect()
+            
             // processAnchorHandleChange(e,0)
         })
 
