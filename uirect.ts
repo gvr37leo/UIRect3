@@ -46,8 +46,8 @@ class UIRect{
         var handleanchormin = new Handle(this.calcAbsAnchorPos(this.anchormin.get()),clickmanager)
         var handleanchormax = new Handle(this.calcAbsAnchorPos(this.anchormax.get()),clickmanager)
         var handleanchorbotleft = new Handle(this.calcAbsAnchorPos(new Vector(this.anchormin.get().x,this.anchormax.get().y)),clickmanager)
-        var handleanchortopright = new Handle(this.calcAbsAnchorPos(new Vector(this.anchormin.get().y,this.anchormax.get().x)),clickmanager)
-        var handles = [handleanchormin,handleanchormax,handleoffsetmin,handleoffsetmax]
+        var handleanchortopright = new Handle(this.calcAbsAnchorPos(new Vector(this.anchormax.get().x,this.anchormin.get().y)),clickmanager)
+        
         // var offsethandles = [handleoffsetmin,handleoffsetmax]
         // var offsetSecHandles = [handleoffsetbotleft,handleoffsettopright]
         // var anchorhandles = [handleanchormin,handleanchormax]
@@ -67,6 +67,7 @@ class UIRect{
             handleoffsetmax,
             handleoffsetbotleft,
         ]
+        var handles = anchorhandles.concat(offsethandles)
 
         // var dirs = [
         //     [Loc.NW0,Loc.NE1],
@@ -125,6 +126,7 @@ class UIRect{
             var handlePos = anchorhandles[loc].pos.get()
             var isMinDirty = false
             var isMaxDirty = false
+            //conversion form abs handle pos to acnhor must first be done
             if(loc == Loc.NW || loc == Loc.NE){
                 this.anchormin.get().y = handlePos.y
                 isMinDirty = true
