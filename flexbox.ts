@@ -15,12 +15,12 @@ enum Alignment{
 }
 
 class FlexBox{
-    public justifyContent:Justification = Justification.center
     public AlignItems:Alignment = Alignment.center
     children: UIRect[];
-    draw = this.uirect.draw
+    draw: any;
 
-    constructor(public uirect:UIRect){
+    constructor(public uirect:UIRect, public justifyContent:Justification){
+        this.draw = this.uirect.draw.bind(uirect)
         this.children = uirect.children
         for(var child of this.children){
             child.anchormin.set(new Vector(0,0))

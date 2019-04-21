@@ -10,6 +10,10 @@ class Rect{
         return new Rect(new Vector(-halfwidth,-halfheight).add(pos), new Vector(halfwidth,halfheight).add(pos))
     }
 
+    copy(){
+        return new Rect(this.min.c(),this.max.c())
+    }
+
     collidePoint(point:Vector){
         
         for (var i = 0; i < this.min.vals.length; i++) {
