@@ -8,6 +8,8 @@ class UIRect{
     offsetmin:PBox<Vector>
     children:UIRect[] = []
     shouldupdateAbsRect = true
+    anchorchangeenabled: boolean = true;
+    offsetchangeenabled: boolean = true;
 
     constructor(anchormin:Vector,anchormax:Vector,offsetmin:Vector,offsetmax:Vector,parent:Box<Rect>){
         this.parent = parent
@@ -38,6 +40,7 @@ class UIRect{
     attachHandles2UIRect(clickmanager:ClickManager):Handle[]{
 
         enum Loc{NW,NE,SE,SW}
+        var that = this
         var absrect = this.absRect.get()
         var handleoffsetmin = new Handle(absrect.min,clickmanager)
         var handleoffsetmax = new Handle(absrect.max,clickmanager)
@@ -122,23 +125,23 @@ class UIRect{
             offsethandles[loc].pos.setHP(handled,absOffsetHandlePos)
         }
 
-        var readAnchorhandlesetdata = (handled:boolean,loc:Loc) => {
+        var readAnchorHandleSetdata = (handled:boolean,loc:Loc) => {
             var handlePos = anchorhandles[loc].pos.get()
             var isMinDirty = false
             var isMaxDirty = false
             //conversion form abs handle pos to acnhor must first be done
             if(loc == Loc.NW || loc == Loc.NE){
-                this.anchormin.get().y = handlePos.y
+                this.anchormin.get().y = inverselerp(this.parent.value.min.y,this.parent.value.max.y,handlePos.y) 
                 isMinDirty = true
             }else{
-                this.anchormax.get().y = handlePos.y
+                this.anchormax.get().y = inverselerp(this.parent.value.min.y,this.parent.value.max.y,handlePos.y) 
                 isMaxDirty = true
             }
             if(loc == Loc.NW || loc == Loc.SW){
-                this.anchormin.get().x = handlePos.x
+                this.anchormin.get().x = inverselerp(this.parent.value.min.x,this.parent.value.max.x,handlePos.x) 
                 isMinDirty = true
             }else{
-                this.anchormax.get().x = handlePos.x
+                this.anchormax.get().x = inverselerp(this.parent.value.min.x,this.parent.value.max.x,handlePos.x) 
                 isMaxDirty = true
             }
 
@@ -190,9 +193,14 @@ class UIRect{
 
         //parent-------------------------------
         this.parent.onchange.listen((val,old) => {
+            //here
+            this.anchorchangeenabled = false
             updateAnchorHandles(false)
+            this.anchorchangeenabled = true
             updateAbsRect(false)
+            this.offsetchangeenabled = false
             updateOffsetHandles(false)
+            this.offsetchangeenabled = true
         })
 
         //absrect-------------------------------
@@ -228,85 +236,82 @@ class UIRect{
             updateAbsRect(e.handled)
         })
 
+        function processAnchorHandleChange(e:PEvent<Vector>,dir:Loc){
 
-        //anchors change handling
-        // var processAnchorHandleChange = (anchorhandle:PEvent<Vector>, minormax:number) => {
+
+
+
+
+            //here
+            if(that.anchorchangeenabled){
+                // var cwDir = dirmap[dir][0]
+                // var ccwDir = dirmap[dir][1]
+                // readAnchorHandleSetdata(e.handled,dir)
+                // updateOffsetHandle(e.handled,dir)
+                // updateOffsetHandle(e.handled,cwDir)
+                // updateOffsetHandle(e.handled,ccwDir)
+
+
+                readOffsetHandleSetData(e.handled,dir)
+                readAnchorHandleSetdata(e.handled,dir)
+            }
+
+            
+            
+
             // updateAnchorData(anchorhandle.handled,minormax)
             // updateAbsRect(anchorhandle.handled)
             // updateOffsetHandle(anchorhandle.handled,minormax)
 
-        //     updateOffsetHandle(anchorhandle.handled,minormax)
-        //     updateOffsetData(anchorhandle.handled,minormax)
-        //     updateAnchorData(anchorhandle.handled,minormax)
+            // updateOffsetHandle(anchorhandle.handled,minormax)
+            // updateOffsetData(anchorhandle.handled,minormax)
+            // updateAnchorData(anchorhandle.handled,minormax)
             
-        // }
-
-        // var processOffsetHandleChange = (offsetHandle:PEvent<Vector>, minormax:number) => {
-        //     updateOffsetData(offsetHandle.handled,minormax)
-        //     updateAbsRect(offsetHandle.handled)
-        // }
+        }
 
         handleanchormin.pos.onchange.listen(e => {
-            readAnchorhandlesetdata(e.handled,Loc.NW)
-            updateOffsetHandle(e.handled,Loc.NW)
-
-            updateAnchorHandle(e.handled,Loc.NE)
-            updateOffsetHandle(e.handled,Loc.NE)
-            updateAnchorHandle(e.handled,Loc.SW)
-            updateOffsetHandle(e.handled,Loc.SW)
-
-            updateAbsRect()
-
-            
-
-
-            // updateOffsetHandles(e.handled)
-            // updateOffsetHandle2(e.handled,Loc.NE)
-            // updateAnchorHandle2(e.handled,Loc.NE)
-            // readAnchorhandlesetdata(e.handled,Loc.NE)
-            // readOffsetHandleSetData(e.handled,Loc.NE)
-            // updateAbsRect()
-            // processAnchorHandleChange(e,0)
+            processAnchorHandleChange(e,Loc.NW)
         })
 
         handleanchortopright.pos.onchange.listen(e => {
-            readAnchorhandlesetdata(e.handled,Loc.NE)
-            updateOffsetHandle(e.handled,Loc.NE)
-
-            updateAnchorHandle(e.handled,Loc.NW)
-            updateOffsetHandle(e.handled,Loc.NW)
-            updateAnchorHandle(e.handled,Loc.SE)
-            updateOffsetHandle(e.handled,Loc.SE)
-
-            updateAbsRect()
-            
-            // processAnchorHandleChange(e,0)
+            processAnchorHandleChange(e,Loc.NE)
         })
 
         handleanchormax.pos.onchange.listen(e => {
-            // processAnchorHandleChange(e,1)
+            processAnchorHandleChange(e,Loc.SE)
         })
 
         handleanchorbotleft.pos.onchange.listen(e => {
-            // processAnchorHandleChange(e,0)
+            processAnchorHandleChange(e,Loc.SW)
         })
 
+        function processOffsetHandleChange(e:PEvent<Vector>,dir:Loc){
+            if(that.offsetchangeenabled){
+                var cwDir = dirmap[dir][0]
+                var ccwDir = dirmap[dir][1]
+            
+                readOffsetHandleSetData(e.handled,dir)
+                updateAbsRect()
 
+                updateOffsetHandle(e.handled,cwDir)
+                updateOffsetHandle(e.handled,ccwDir)
+            }
+        }
 
         handleoffsetmin.pos.onchange.listen(e => {
-            // processOffsetHandleChange(e,0)
+            processOffsetHandleChange(e,Loc.NW)
         })
 
-        handleanchortopright.pos.onchange.listen(e => {
-            // processOffsetHandleChange(e,1)
+        handleoffsettopright.pos.onchange.listen(e => {
+            processOffsetHandleChange(e,Loc.NE)
         })
 
         handleoffsetmax.pos.onchange.listen(e => {
-            // processOffsetHandleChange(e,1)
+            processOffsetHandleChange(e,Loc.SE)
         })
 
         handleoffsetbotleft.pos.onchange.listen(e => {
-            // processOffsetHandleChange(e,1)
+            processOffsetHandleChange(e,Loc.SW)
         })
 
         return handles

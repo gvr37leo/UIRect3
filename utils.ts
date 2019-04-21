@@ -189,7 +189,7 @@ function lerp(a:number,b:number,r:number):number{
 }
 
 function inverselerp(a:number,b:number,v:number){
-    return (v - a) / (b - a)
+    return to(a,v) / to(a,b)
 }
 
 function to(a:number,b:number):number{
