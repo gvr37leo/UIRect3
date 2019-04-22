@@ -42,22 +42,15 @@ class UIRect{
         enum Loc{NW,NE,SE,SW}
         var that = this
         var absrect = this.absRect.get()
-        var handleoffsetmin = new Handle(absrect.min,clickmanager)
-        var handleoffsetmax = new Handle(absrect.max,clickmanager)
-        var handleoffsetbotleft = new Handle(absrect.getPoint(new Vector(0,1)),clickmanager)//
-        var handleoffsettopright = new Handle(absrect.getPoint(new Vector(1,0)),clickmanager)//
-        var handleanchormin = new Handle(this.calcAbsAnchorPos(this.anchormin.get()),clickmanager)
-        var handleanchormax = new Handle(this.calcAbsAnchorPos(this.anchormax.get()),clickmanager)
-        var handleanchorbotleft = new Handle(this.calcAbsAnchorPos(new Vector(this.anchormin.get().x,this.anchormax.get().y)),clickmanager)
-        var handleanchortopright = new Handle(this.calcAbsAnchorPos(new Vector(this.anchormax.get().x,this.anchormin.get().y)),clickmanager)
+        var handleoffsetmin = new Handle(absrect.min,clickmanager,HandleType.offset)
+        var handleoffsetmax = new Handle(absrect.max,clickmanager,HandleType.offset)
+        var handleoffsetbotleft = new Handle(absrect.getPoint(new Vector(0,1)),clickmanager,HandleType.offset)
+        var handleoffsettopright = new Handle(absrect.getPoint(new Vector(1,0)),clickmanager,HandleType.offset)
+        var handleanchormin = new Handle(this.calcAbsAnchorPos(this.anchormin.get()),clickmanager,HandleType.anchor)
+        var handleanchormax = new Handle(this.calcAbsAnchorPos(this.anchormax.get()),clickmanager,HandleType.anchor)
+        var handleanchorbotleft = new Handle(this.calcAbsAnchorPos(new Vector(this.anchormin.get().x,this.anchormax.get().y)),clickmanager,HandleType.anchor)
+        var handleanchortopright = new Handle(this.calcAbsAnchorPos(new Vector(this.anchormax.get().x,this.anchormin.get().y)),clickmanager,HandleType.anchor)
         
-        // var offsethandles = [handleoffsetmin,handleoffsetmax]
-        // var offsetSecHandles = [handleoffsetbotleft,handleoffsettopright]
-        // var anchorhandles = [handleanchormin,handleanchormax]
-        // var anchorSecHandles = [handleanchorbotleft,handleanchortopright]
-        // var offsetDatas = [this.offsetmin,this.offsetmax]
-        // var anchorDatas = [this.anchormin,this.anchormax]
-
         var anchorhandles = [
             handleanchormin,
             handleanchortopright,
@@ -129,7 +122,6 @@ class UIRect{
             var handlePos = anchorhandles[loc].pos.get()
             var isMinDirty = false
             var isMaxDirty = false
-            //conversion form abs handle pos to acnhor must first be done
             if(loc == Loc.NW || loc == Loc.NE){
                 this.anchormin.get().y = inverselerp(this.parent.value.min.y,this.parent.value.max.y,handlePos.y) 
                 isMinDirty = true
@@ -193,7 +185,6 @@ class UIRect{
 
         //parent-------------------------------
         this.parent.onchange.listen((val,old) => {
-            //here
             this.anchorchangeenabled = false
             updateAnchorHandles(false)
             this.anchorchangeenabled = true
@@ -236,13 +227,8 @@ class UIRect{
             updateAbsRect(e.handled)
         })
 
+
         function processAnchorHandleChange(e:PEvent<Vector>,dir:Loc){
-
-
-
-
-
-            //here
             if(that.anchorchangeenabled){
                 // var cwDir = dirmap[dir][0]
                 // var ccwDir = dirmap[dir][1]
@@ -255,18 +241,6 @@ class UIRect{
                 readOffsetHandleSetData(e.handled,dir)
                 readAnchorHandleSetdata(e.handled,dir)
             }
-
-            
-            
-
-            // updateAnchorData(anchorhandle.handled,minormax)
-            // updateAbsRect(anchorhandle.handled)
-            // updateOffsetHandle(anchorhandle.handled,minormax)
-
-            // updateOffsetHandle(anchorhandle.handled,minormax)
-            // updateOffsetData(anchorhandle.handled,minormax)
-            // updateAnchorData(anchorhandle.handled,minormax)
-            
         }
 
         handleanchormin.pos.onchange.listen(e => {

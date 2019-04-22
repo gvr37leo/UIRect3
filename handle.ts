@@ -1,9 +1,12 @@
+enum HandleType{anchor,offset}
+
 class Handle{
     selected:boolean
     pos:PBox<Vector>
     rect: Rect;
+    
 
-    constructor(pos:Vector,clickmanager:ClickManager){
+    constructor(pos:Vector,clickmanager:ClickManager, public type:HandleType){
         this.pos = new PBox(pos)
         
         this.pos.onchange.listen(e => {
@@ -28,7 +31,13 @@ class Handle{
     }
 
     draw(ctxt:CanvasRenderingContext2D){
-        this.pos.get().draw(ctxt)
+        // this.pos.get().draw(ctxt)
+        if(this.type == HandleType.anchor){
+            ctxt.strokeStyle = 'red'
+        }else{
+            ctxt.strokeStyle = 'blue'
+        }
         this.rect.draw(ctxt)
+        ctxt.strokeStyle = 'black'
     }
 }
