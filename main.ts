@@ -62,7 +62,7 @@ var uirects = [
     ),
     new UIRect(
         new Vector(0.5,0),new Vector(0.5,0),
-        smallrect.min.c().add(new Vector(-220,0)),smallrect.max.c(),
+        smallrect.min.c().add(new Vector(-210,0)),smallrect.max.c(),
         containerRect.absRect.box
     ),
 ]

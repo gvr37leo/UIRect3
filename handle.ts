@@ -34,10 +34,12 @@ class Handle{
         // this.pos.get().draw(ctxt)
         if(this.type == HandleType.anchor){
             ctxt.strokeStyle = 'red'
+            this.rect.draw(ctxt)
         }else{
             ctxt.strokeStyle = 'blue'
+            this.rect.draw(ctxt)
         }
-        this.rect.draw(ctxt)
+        
         ctxt.strokeStyle = 'black'
     }
 }

@@ -50,6 +50,7 @@ class UIRect{
         var handleanchormax = new Handle(this.calcAbsAnchorPos(this.anchormax.get()),clickmanager,HandleType.anchor)
         var handleanchorbotleft = new Handle(this.calcAbsAnchorPos(new Vector(this.anchormin.get().x,this.anchormax.get().y)),clickmanager,HandleType.anchor)
         var handleanchortopright = new Handle(this.calcAbsAnchorPos(new Vector(this.anchormax.get().x,this.anchormin.get().y)),clickmanager,HandleType.anchor)
+        var draghandle = new Handle(absrect.getPoint(new Vector(0.5,0)),clickmanager,HandleType.offset)
         
         var anchorhandles = [
             handleanchormin,
@@ -63,7 +64,7 @@ class UIRect{
             handleoffsetmax,
             handleoffsetbotleft,
         ]
-        var handles = anchorhandles.concat(offsethandles)
+        var handles = anchorhandles.concat(offsethandles).concat(draghandle)
 
         // var dirs = [
         //     [Loc.NW0,Loc.NE1],
@@ -82,6 +83,10 @@ class UIRect{
 
         var updateOffsetHandles = (handled:boolean) => {
             offsethandles.forEach((ah, i) => updateOffsetHandle(handled,i))
+        }
+
+        var updateDragHandle = (handled:boolean) => {
+            draghandle.pos.setHP(handled,this.absRect.box.value.getPoint(new Vector(0.5,0)))
         }
 
         var updateAnchorHandle = (handled:boolean,loc:Loc) => {
@@ -192,18 +197,22 @@ class UIRect{
             this.offsetchangeenabled = false
             updateOffsetHandles(false)
             this.offsetchangeenabled = true
+            updateDragHandle(false)
         })
 
         //absrect-------------------------------
         this.absRect.onchange.listen((e,old) => {
             updateOffsetHandles(e.handled)
+            updateDragHandle(e.handled)
         })
+
 
         this.anchormin.onchange.listen(e => {
             updateAnchorHandle(e.handled,Loc.NW)
             updateAnchorHandle(e.handled,Loc.NE)
             updateAnchorHandle(e.handled,Loc.SW)
             updateAbsRect(e.handled)
+            updateDragHandle(e.handled)
         })
 
         this.anchormax.onchange.listen(e => {
@@ -211,6 +220,7 @@ class UIRect{
             updateAnchorHandle(e.handled,Loc.NE)
             updateAnchorHandle(e.handled,Loc.SW)
             updateAbsRect(e.handled)
+            updateDragHandle(e.handled)
         })
         
         this.offsetmin.onchange.listen(e => {
@@ -218,6 +228,7 @@ class UIRect{
             updateOffsetHandle(e.handled,Loc.NE)
             updateOffsetHandle(e.handled,Loc.SW)
             updateAbsRect(e.handled)
+            updateDragHandle(e.handled)
         })
 
         this.offsetmax.onchange.listen(e => {
@@ -225,6 +236,7 @@ class UIRect{
             updateOffsetHandle(e.handled,Loc.NE)
             updateOffsetHandle(e.handled,Loc.SW)
             updateAbsRect(e.handled)
+            updateDragHandle(e.handled)
         })
 
 
@@ -265,7 +277,7 @@ class UIRect{
                 var ccwDir = dirmap[dir][1]
             
                 readOffsetHandleSetData(e.handled,dir)
-                updateAbsRect()
+                updateAbsRect(e.handled)
 
                 updateOffsetHandle(e.handled,cwDir)
                 updateOffsetHandle(e.handled,ccwDir)
@@ -288,13 +300,23 @@ class UIRect{
             processOffsetHandleChange(e,Loc.SW)
         })
 
+        //draghandle--------------------
+        draghandle.pos.onchange.listen(e => {
+            var source = this.absRect.box.value.getPoint(new Vector(0.5,0))
+            var offset = source.to(e.val)
+            this.offsetmin.setHP(e.handled,this.offsetmin.box.value.c().add(offset))
+            this.offsetmax.setHP(e.handled,this.offsetmax.box.value.c().add(offset))
+            updateOffsetHandles(e.handled)
+            updateAbsRect(e.handled)
+        })
+
         return handles
     }
 
     draw(ctxt:CanvasRenderingContext2D){
         var absrect = this.absRect.get() //this.calcAbsRect(this.parent.get())
         var size = absrect.size()
-        ctxt.strokeRect(absrect.min.x + 0.5,absrect.min.y + 0.5,size.x,size.y)
+        ctxt.strokeRect(Math.floor(absrect.min.x) + 0.5,Math.floor(absrect.min.y) + 0.5,size.x,size.y)
         this.children.forEach(c => c.draw(ctxt))
     }
 
